@@ -1,0 +1,57 @@
+    <div><div class="container-fluid">
+        <div class="row">
+   @for (movieData of movieService.movies();track  movieData;)
+    {  
+   
+        <div class="col-3">   
+            <div class="card">
+        
+    
+        <img src="{{movieData.Poster}}" alt="{{movieData.Title}} poster">
+                        
+        {{movieData.Title}}
+        {{movieData.Year}}
+        
+       
+        <a [routerLink]="['/movie', movieData.imdbID] ">View Details</a>
+        
+
+        </div>
+        </div>     
+
+    }
+    </div>
+     </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+              <div class="col-2">   <form (ngSubmit)="previousPage_results()">
+         
+            <button type="submit" [disabled]="movieService.disabledprevious" [hidden]="movieService.hiddenprevious" class="btn btn-primary">Previous Page</button>
+
+
+</form></div>
+<div class="col2">
+    <div [hidden]="movieService.hiddennext">
+    
+  {{statusText}}
+    </div>
+   
+
+</div>
+<div class="col2">
+    <div [hidden]="movieService.hiddentext">
+    No movies found.
+    </div>
+   
+
+</div>
+    
+        <div class="col-2"> <form (ngSubmit)="nextPage_results()">
+         
+            <button type="submit" [disabled]="movieService.disablednext" [hidden]="movieService.hiddennext" class="btn btn-primary">Next Page</button>
+        </form></div>
+                  
+        </div></div>
+</div>
+        

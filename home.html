@@ -1,0 +1,21 @@
+@if (movieService.movie(); as movieData)
+{ 
+    @if (movieData.Response==="True")
+    {
+        
+        <div>
+            
+        <h2> Title : {{movieData.Title}}</h2>
+        <p>Year : {{movieData.Year}}</p>
+        <p>Rating (on imdb):  {{movieData.imdbRating}}</p>
+        <img src="{{movieData.Poster}}" alt="{{movieData.Title}} poster">
+        </div>
+    }
+    @else
+    {
+        
+        <div>            
+            <h2>{{movieData.Error}}</h2>
+        </div>
+    }
+}

@@ -1,0 +1,173 @@
+import { computed, inject, isWritableSignal, Signal, signal } from "@angular/core";
+import { take } from "rxjs";
+import { HttpClient } from "@angular/common/http";
+import { MovieDetails, SearchResults, MovieResults} from "./models/moviedetails.interface"; 
+import { Injectable } from "@angular/core";
+
+
+@Injectable ({
+  providedIn : 'root',
+})
+
+export class MovieapiService 
+{
+  private _http = inject(HttpClient);
+  
+
+
+  public title : string ="";
+
+  public currentPage : number = 1;
+  public maxPage : number = 0;
+  public disablednext:boolean=false;
+  public disabledprevious:boolean=true;
+  public hiddennext:boolean=true;
+  public hiddentext:boolean=true;
+  public hiddenprevious:boolean=true;
+
+  private currentPage_signal = signal <number>(1);
+  
+
+  public movie = signal <MovieDetails|null>(null);
+  public movies = signal<MovieResults[]>([]);
+  public total_results = signal <string|undefined>("0");
+  public maxPages: Signal<number|undefined> = computed(()=> {
+    if (this.total_results!==undefined)
+    {   if ( Number(this.total_results())%10==0)
+        {
+          return ( Number(this.total_results()));
+        }
+        else
+        {
+
+          return ((parseInt(( (Number(this.total_results()))/10).toString()))+1);
+        }
+    }
+    else
+    {
+      return this.total_results;
+    }    
+    });
+
+    
+
+ 
+  private _baseUrl="https://www.omdbapi.com/";
+  private _apikey= "4299747d";
+
+
+  getMovie(id:string)
+  {
+    this.hiddennext=false;
+    this.hiddentext=true;
+    this.hiddenprevious=false;
+
+    const url = this._baseUrl+"?i=" + id + "&apikey=" + this._apikey;
+
+    this._http.get<MovieDetails>(url)
+    .pipe(take(1))
+    .subscribe(data => {this.movie.set(data);
+    })
+  }
+
+  getMovies(title_method:string)
+  {
+    this.maxPage=0;
+    this.maxPage= parseInt (this.maxPages.toString());
+    
+    this.hiddennext=false;
+      this.hiddentext=true;
+    this.hiddenprevious=false;  
+   
+    this.title=title_method;
+    
+     const url = this._baseUrl+"?s=" + title_method + "&apikey=" + this._apikey;
+      this._http.get<SearchResults>(url)
+      .pipe (take(1))
+      .subscribe(data => {
+        this.movies.set(data.Search);
+        this.total_results.set(data.totalResults);
+
+         console.log (this.movies());
+      console.log (this.total_results());
+ if (this.movies()?.length === 0 || !this.movies()) {
+    this.hiddennext = true;
+      this.hiddentext=false;
+    this.hiddenprevious = true;
+
+} 
+  }      
+    )  
+    
+    this.maxPage= parseInt (this.maxPages.toString());
+  }
+  
+
+  nextPage()
+  {
+    this.currentPage++;
+    this.currentPage_signal.set(this.currentPage);
+   
+  
+
+    this.getNextPage();
+
+    if (( Number(this.total_results())%10==0))
+    {
+      if (this.currentPage===(parseInt(( (Number(this.total_results()))/10).toString())))
+      {
+        this.disablednext=true;
+      }
+    }
+    else if (this.currentPage===(parseInt(( (Number(this.total_results()))/10).toString()))+1)
+    {
+      this.disablednext=true;
+    }
+
+  }
+
+  previousPage()
+  {
+   this.currentPage--;
+    if (( Number(this.total_results())%10==0))
+    {
+      if (this.currentPage===(parseInt(( (Number(this.total_results()))/10).toString())))
+      {
+        this.disablednext=false;
+      }
+    }
+    else if (this.currentPage<(parseInt(( (Number(this.total_results()))/10).toString()))+1)
+    {
+        this.disabledprevious=false;
+    }   
+   
+    this.currentPage_signal.set(this.currentPage);
+     this.getNextPage();
+
+     if (1==this.currentPage)
+      {
+        this.disabledprevious=true;
+      }
+      
+    
+  }
+
+  getNextPage()
+  {
+      const url = this._baseUrl+"?s=" + this.title + "&page="+ this.currentPage+ "&apikey=" + this._apikey;
+      this._http.get<SearchResults>(url)
+      .pipe (take(1))
+      .subscribe(data => {
+        this.movies.set(data.Search);
+
+         console.log (this.movies());
+    
+    } )
+
+  }
+
+
+}
+
+
+

@@ -1,0 +1,63 @@
+import { Component } from '@angular/core';
+import { inject }  from '@angular/core';
+import { MovieapiService } from '../movieapi-service';  
+import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Injectable } from "@angular/core";
+
+@Injectable ({
+  providedIn : 'root',
+})
+
+@Component({
+  selector: 'app-results',
+  imports: [RouterLink, FormsModule],
+  templateUrl: './results.html',
+  styleUrl: './results.css',
+})
+export class Results {
+     movieService =inject(MovieapiService);
+
+    
+   public maxPage_results = 0;
+
+
+   
+    get statusText(): string {
+  const current = this.movieService.currentPage;
+  const max = this.maxPage_results;
+  
+  return (max === 0) ? "Page 1" : `${current} out of ${max} pages`;
+}
+   public getMaxPage()
+   {
+     if (( Number(this.movieService.total_results())%10==0))
+      
+      {
+        this.maxPage_results= (parseInt(( (Number(this.movieService.total_results()))/10).toString()))
+      
+      }
+    
+    else
+    {
+       this.maxPage_results= parseInt(( (Number(this.movieService.total_results()))/10).toString())+1
+      
+    } 
+   }
+
+   
+   
+    
+
+  protected nextPage_results()
+  {
+    this.movieService.nextPage();
+    this.getMaxPage();
+  }
+
+   protected previousPage_results()
+  {
+    this.movieService.previousPage();
+    this.getMaxPage();
+  }
+}
